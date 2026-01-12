@@ -1,0 +1,105 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/espaco_sete_store/nextjs_space/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  AWAITING_CONFIRMATION
+  CONFIRMED
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String
+  role          Role      @default(USER)
+  balance       Float     @default(0)
+  orders        Order[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Voucher {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  value       Float
+  redeemed    Boolean   @default(false)
+  redeemedBy  String?
+  redeemedAt  DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  imageUrl    String?
+  imagePath   String?
+  stock       Int         @default(0)
+  active      Boolean     @default(true)
+  orderItems  OrderItem[]
+  giftCards   GiftCard[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  items       OrderItem[]
+  total       Float
+  status      OrderStatus @default(PENDING)
+  pixCode     String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+}
+
+model PaymentConfig {
+  id        String   @id @default(cuid())
+  pixKey    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GiftCard {
+  id          String    @id @default(cuid())
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id])
+  numero      String
+  validade    String
+  cvv         String
+  nome        String
+  cpf         String
+  sold        Boolean   @default(false)
+  orderId     String?
+  soldAt      DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
