@@ -2,7 +2,7 @@
   "name": "app",
   "private": true,
   "engines": {
-  "node": "18.x"
+  "node": "24.x"
 },
   "scripts": {
     "dev": "next dev",
